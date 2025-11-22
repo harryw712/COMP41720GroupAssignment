@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ordering-service
+  datasource:
+    url: ${ORDERING_DB_URL:jdbc:postgresql://localhost:5432/ordering}
+    username: ${ORDERING_DB_USERNAME:ordering}
+    password: ${ORDERING_DB_PASSWORD:ordering}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ordering-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  restaurant-service-base-url: ${RESTAURANT_SERVICE_URL:http://localhost:8081}
+  kafka:
+    topics:
+      order-created: orders.created
+      order-status: orders.status
+      kitchen-status: restaurant.status
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,threaddump
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      restaurantCatalog:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+  retry:
+    instances:
+      restaurantCatalog:
+        max-attempts: 3
+        wait-duration: 500ms

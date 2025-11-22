@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "Distributed Food Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Restaurant",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8081/api/restaurants",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "restaurants"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Campus Kitchen\"\n}"
+        }
+      }
+    }
+  ]
+}

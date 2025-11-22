@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: restaurant-config
+  labels:
+    app: restaurant-service
+data:
+  RESTAURANT_DB_URL: jdbc:postgresql://restaurant-db:5432/restaurant
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: restaurant-service
+  template:
+    metadata:
+      labels:
+        app: restaurant-service
+    spec:
+      containers:
+        - name: restaurant-service
+          image: ghcr.io/example/restaurant-service:0.1.0
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: restaurant-config
+            - secretRef:
+                name: restaurant-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-service
+spec:
+  selector:
+    app: restaurant-service
+  ports:
+    - port: 80
+      targetPort: 8081

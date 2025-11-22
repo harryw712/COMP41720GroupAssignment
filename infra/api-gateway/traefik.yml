@@ -1,0 +1,43 @@
+http:
+  middlewares:
+    default-rate-limit:
+      rateLimit:
+        average: 50
+        burst: 100
+    jwt-auth:
+      plugin:
+        jwt:
+          secret: ${GATEWAY_JWT_SECRET:-change-me}
+  routers:
+    ordering-router:
+      entryPoints:
+        - web
+      rule: Host(`ordering.local`) && PathPrefix(`/api/orders`)
+      service: ordering-svc
+      middlewares:
+        - default-rate-limit
+    restaurant-router:
+      entryPoints:
+        - web
+      rule: Host(`ordering.local`) && PathPrefix(`/api/restaurants`)
+      service: restaurant-svc
+    notification-router:
+      entryPoints:
+        - web
+      rule: Host(`ordering.local`) && PathPrefix(`/api/notifications`)
+      service: notification-svc
+  services:
+    ordering-svc:
+      loadBalancer:
+        servers:
+          - url: http://ordering-service:8080
+    restaurant-svc:
+      loadBalancer:
+        servers:
+          - url: http://restaurant-service:8081
+    notification-svc:
+      loadBalancer:
+        servers:
+          - url: http://notification-service:8082
+serversTransport:
+  insecureSkipVerify: true
